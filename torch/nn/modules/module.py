@@ -1941,6 +1941,18 @@ class Module:
             modules = self.__dict__["_modules"]
             if name in modules:
                 return modules[name]
+
+        # Check if the attribute exists as a property
+        # This handles the case where a property raises an AttributeError
+        property_obj = getattr(type(self), name, None)
+        if isinstance(property_obj, property):
+            # Re-raise the original AttributeError from the property
+            try:
+                return property_obj.__get__(self, type(self))
+            except AttributeError as e:
+                # Re-raise the original AttributeError
+                raise e
+
         raise AttributeError(
             f"'{type(self).__name__}' object has no attribute '{name}'"
         )
